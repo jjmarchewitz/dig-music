@@ -1,6 +1,6 @@
 const { invoke } = window.__TAURI__.tauri;
 
-await invoke("prompt_for_spotify_files")
+await invoke("load_user_data")
 
 
 

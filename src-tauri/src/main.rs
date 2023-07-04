@@ -8,7 +8,7 @@ fn main() {
     tauri::Builder::default()
         .manage(App::default())
         .invoke_handler(tauri::generate_handler![
-            commands::file_dialog::prompt_for_spotify_files
+            commands::file_dialog::load_user_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

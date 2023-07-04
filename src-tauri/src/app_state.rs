@@ -1,10 +1,14 @@
 use std::sync::{Arc, Mutex};
 
-pub struct AppState {}
+use crate::data::Play;
+
+pub struct AppState {
+    pub plays: Vec<Play>,
+}
 
 impl Default for AppState {
     fn default() -> Self {
-        AppState {}
+        AppState { plays: vec![] }
     }
 }
 
