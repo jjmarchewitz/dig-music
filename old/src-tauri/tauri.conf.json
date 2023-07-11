@@ -1,10 +1,18 @@
 {
   "build": {
-    "beforeDevCommand": "npx tailwindcss -i input.css -o output.css && trunk serve",
-    "beforeBuildCommand": "trunk build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": true
+    "beforeDevCommand": {
+      "script": "npx tailwindcss -i frontend/input.css -o frontend/build/output.css --watch",
+      "cwd": null,
+      "wait": false
+    },
+    "beforeBuildCommand": {
+      "script": "npx tailwindcss -i frontend/input.css -o frontend/build/output.css --minify",
+      "cwd": null,
+      "wait": true
+    },
+    "devPath": "../frontend",
+    "distDir": "../frontend",
+    "withGlobalTauri": false
   },
   "package": {
     "productName": "deep-spotify",
@@ -37,7 +45,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "deep-spotify",
+        "title": "Deep Spotify 🍆💦💦💦",
         "width": 800,
         "height": 600
       }

@@ -1,3 +1,17 @@
+# Project-specific
+frontend/build
+
+# Rust
+/target
+**/*.rs.bk
+Cargo.lock
+bin/
+pkg/
+wasm-pack.log
+.DS_Store
+dist
+node_modules
+
 # Logs
 logs
 *.log

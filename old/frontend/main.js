@@ -1,9 +1,6 @@
-const { invoke } = window.__TAURI__.tauri;
+import { invoke } from "@tauri-apps/api";
 
-await invoke("load_user_data")
-
-
-
+await invoke("load_user_data");
 
 // let greetInputEl;
 // let greetMsgEl;

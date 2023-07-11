@@ -66,8 +66,8 @@ pub async fn load_user_data(app_state: tauri::State<'_, App>) -> Result<(), Stri
     app_state_with_lock.plays = song_data
         .into_par_iter()
         .flat_map(|file_data| {
-            let d: Vec<Play> = serde_json::from_str::<Vec<Play>>(&file_data).unwrap();
-            d.into_par_iter()
+            let plays: Vec<Play> = serde_json::from_str::<Vec<Play>>(&file_data).unwrap();
+            plays.into_par_iter()
         })
         .collect();
 
