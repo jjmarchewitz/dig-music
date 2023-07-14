@@ -1,7 +1,7 @@
 {
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npx tailwindcss -i ./input.css -o ./src/styles.css && npm run dev",
+    "beforeBuildCommand": "npx tailwindcss -i ./input.css -o ./src/styles.css && npm run build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
