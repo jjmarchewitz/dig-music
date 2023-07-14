@@ -1,16 +1,5 @@
-# Project-specific
-frontend/build
-
-# Rust
-/target
-**/*.rs.bk
-Cargo.lock
-bin/
-pkg/
-wasm-pack.log
-.DS_Store
-dist
-node_modules
+# Project specific
+src-tauri/target
 
 # Logs
 logs
@@ -27,7 +16,6 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode
 .vscode/*
 !.vscode/extensions.json
 .idea
