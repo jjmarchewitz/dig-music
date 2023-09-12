@@ -14,7 +14,7 @@ function App() {
   // }
 
   return (
-    <div className="flex">
+    <div className="h-screen w-screen">
         <SideBar />
     </div>
   );

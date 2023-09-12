@@ -1,5 +1,5 @@
 # Project specific
-src-tauri/target
+app/src-tauri/target
 
 # Logs
 logs

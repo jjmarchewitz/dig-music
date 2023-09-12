@@ -1,0 +1,3 @@
+[workspace]
+
+members = ["deep-spotify", "cli", "app/src-tauri"]
