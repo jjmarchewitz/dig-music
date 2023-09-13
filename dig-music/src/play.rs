@@ -1,3 +1,4 @@
+use crate::error::KeyGenerateError;
 use crate::group::{Album, Artist, Episode, Podcast, Song};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -31,8 +32,69 @@ pub struct Play {
 }
 
 impl Play {
-    // TODO: make this return a custom Result
-    fn generate_key_album(&self) {
-        // Album::generate_key_string_from_values(self.master_metadata_album_album_name, artist_name)
+    fn generate_key_album(&self) -> Result<String, KeyGenerateError> {
+        let Some(album_name) = &self.master_metadata_album_album_name else {
+            return Err(KeyGenerateError::MissingAlbumName);
+        };
+
+        let Some(artist_name) = &self.master_metadata_album_artist_name else {
+            return Err(KeyGenerateError::MissingArtistName);
+        };
+
+        let key = Album::generate_key_string_from_values(album_name, artist_name);
+
+        Ok(key)
+    }
+
+    fn generate_key_artist(&self) -> Result<String, KeyGenerateError> {
+        let Some(artist_name) = &self.master_metadata_album_artist_name else {
+            return Err(KeyGenerateError::MissingArtistName);
+        };
+
+        let key = Artist::generate_key_string_from_values(artist_name);
+
+        Ok(key)
+    }
+
+    fn generate_key_episode(&self) -> Result<String, KeyGenerateError> {
+        let Some(episode_name) = &self.episode_name else {
+            return Err(KeyGenerateError::MissingEpisodeName);
+        };
+
+        let Some(podcast_name) = &self.episode_show_name else {
+            return Err(KeyGenerateError::MissingPodcastName);
+        };
+
+        let key = Episode::generate_key_string_from_values(episode_name, podcast_name);
+
+        Ok(key)
+    }
+
+    fn generate_key_podcast(&self) -> Result<String, KeyGenerateError> {
+        let Some(podcast_name) = &self.episode_show_name else {
+            return Err(KeyGenerateError::MissingPodcastName);
+        };
+
+        let key = Podcast::generate_key_string_from_values(podcast_name);
+
+        Ok(key)
+    }
+
+    fn generate_key_song(&self) -> Result<String, KeyGenerateError> {
+        let Some(song_name) = &self.master_metadata_track_name else {
+            return Err(KeyGenerateError::MissingSongName);
+        };
+
+        let Some(album_name) = &self.master_metadata_album_album_name else {
+            return Err(KeyGenerateError::MissingAlbumName);
+        };
+
+        let Some(artist_name) = &self.master_metadata_album_artist_name else {
+            return Err(KeyGenerateError::MissingArtistName);
+        };
+
+        let key = Song::generate_key_string_from_values(song_name, album_name, artist_name);
+
+        Ok(key)
     }
 }
