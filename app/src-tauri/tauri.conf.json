@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "deep-spotify",
+    "productName": "dig-music",
     "version": "0.0.0"
   },
   "tauri": {
@@ -37,7 +37,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "deep-spotify",
+        "title": "dig-music",
         "width": 800,
         "height": 600
       }

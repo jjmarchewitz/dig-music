@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 
-use deep_spotify::data;
+use dig_music;
 
 fn main() {
-    let path: PathBuf = "/Users/jjmarch/Repos/deep-spotify/test-data/my_spotify_data_JUL_23.zip"
+    let path: PathBuf = "/Users/jjmarch/Repos/dig-music/test-data/my_spotify_data_JUL_23.zip"
         .parse()
         .unwrap();
 
-    let plays = data::load_plays(path).unwrap();
+    let plays = dig_music::load_plays(path).unwrap();
 
     dbg!(plays);
 }

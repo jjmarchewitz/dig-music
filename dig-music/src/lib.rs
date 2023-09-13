@@ -1,3 +1,6 @@
+pub mod error;
+
+mod aggregate;
 mod group;
 mod load;
 mod play;

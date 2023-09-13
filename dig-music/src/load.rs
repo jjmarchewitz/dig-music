@@ -1,4 +1,4 @@
-use crate::data::Play;
+use crate::Play;
 use rayon::prelude::*;
 use regex::Regex;
 use std::{
@@ -8,8 +8,8 @@ use std::{
 };
 use zip::ZipArchive;
 
-pub fn load_plays(path: PathBuf) -> Result<Vec<Play>, ()> {
-    let mut archive = load_archive(&path);
+pub fn load_plays(path_to_zip: PathBuf) -> Result<Vec<Play>, ()> {
+    let mut archive = load_archive(&path_to_zip);
     let song_data = extract_song_data(&mut archive);
 
     let temp: Vec<Play> = song_data

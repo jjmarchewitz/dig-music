@@ -1,3 +1,4 @@
 [workspace]
 
-members = ["deep-spotify", "cli", "app/src-tauri"]
+members = ["dig-music", "cli", "app/src-tauri"]
+resolver = "2"
