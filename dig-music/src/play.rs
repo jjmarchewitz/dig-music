@@ -1,3 +1,4 @@
+use crate::group::{Album, Artist, Episode, Podcast, Song};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::net::Ipv4Addr;
@@ -27,4 +28,11 @@ pub struct Play {
     pub ts: DateTime<Utc>,
     pub user_agent_decrypted: Option<String>,
     pub username: String,
+}
+
+impl Play {
+    // TODO: make this return a custom Result
+    fn generate_key_album(&self) {
+        // Album::generate_key_string_from_values(self.master_metadata_album_album_name, artist_name)
+    }
 }

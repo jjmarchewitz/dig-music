@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 chrono = "~0.4"
-polars = "~0.32"
+# polars = "~0.32"
 rayon = "~1.7"
 regex = "~1.9"
 serde = { version = "~1.0", features = ["derive"] }
