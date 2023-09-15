@@ -1,6 +1,4 @@
-use std::hash;
-
-use super::{AddPlayError, GroupType, PlayGroup};
+use super::{GroupMetaData, GroupType, PlayGroup};
 use crate::aggregate::AggregatedData;
 use crate::Play;
 
@@ -17,7 +15,7 @@ impl PlayGroup for Album {
     }
 
     fn get_hash(&self) -> String {
-        Album::generate(&self.album_name, &self.artist_name)
+        Album::generate_hash(&self.album_name, &self.artist_name)
     }
 
     fn add_play(&mut self, play: Play) {
@@ -31,6 +29,13 @@ impl PlayGroup for Album {
     fn get_aggregated_data_mut(&mut self) -> &mut AggregatedData {
         &mut self.aggregated_data
     }
+
+    fn get_metadata(&self) -> GroupMetaData {
+        GroupMetaData::Album {
+            album_name: self.album_name.as_str(),
+            artist_name: self.artist_name.as_str(),
+        }
+    }
 }
 
 impl Album {
@@ -42,18 +47,26 @@ impl Album {
         }
     }
 
-    pub fn try_new_from_options(
-        album_name: Option<&str>,
-        artist_name: Option<&str>,
-    ) -> Option<Box<dyn PlayGroup>> {
-        if let (Some(album), Some(artist)) = (album_name, artist_name) {
-            Some(Box::new(Album::new(&album, &artist)))
+    pub fn get_metadata_from_play(play: &Play) -> Option<(&str, &str)> {
+        if let (Some(album_name), Some(artist_name)) = (
+            &play.master_metadata_album_album_name,
+            &play.master_metadata_album_artist_name,
+        ) {
+            Some((album_name, artist_name))
         } else {
             None
         }
     }
 
-    pub fn generate(album_name: &str, artist_name: &str) -> String {
+    pub fn try_new_from_play(play: &Play) -> Option<Box<dyn PlayGroup>> {
+        if let Some((album_name, artist_name)) = Album::get_metadata_from_play(play) {
+            Some(Box::new(Album::new(album_name, artist_name)))
+        } else {
+            None
+        }
+    }
+
+    pub fn generate_hash(album_name: &str, artist_name: &str) -> String {
         format!("{}//{}", album_name, artist_name)
     }
 }

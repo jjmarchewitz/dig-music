@@ -98,7 +98,7 @@ impl AggregatedData {
         if let Some(c) = self.conn_country.get_mut(play.conn_country.as_str()) {
             *c += 1;
         } else {
-            self.end_reason.insert(play.conn_country, 1);
+            self.conn_country.insert(play.conn_country, 1);
         }
     }
 }

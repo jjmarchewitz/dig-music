@@ -1,4 +1,4 @@
-use super::{GroupType, PlayGroup};
+use super::{GroupMetaData, GroupType, PlayGroup};
 use crate::aggregate::AggregatedData;
 use crate::Play;
 
@@ -28,6 +28,12 @@ impl PlayGroup for Podcast {
     fn get_aggregated_data_mut(&mut self) -> &mut AggregatedData {
         &mut self.aggregated_data
     }
+
+    fn get_metadata(&self) -> GroupMetaData {
+        GroupMetaData::Podcast {
+            podcast_name: self.podcast_name.as_str(),
+        }
+    }
 }
 
 impl Podcast {
@@ -37,6 +43,23 @@ impl Podcast {
             ..Default::default()
         }
     }
+
+    pub fn get_metadata_from_play(play: &Play) -> Option<&str> {
+        if let Some(podcast_name) = &play.episode_show_name {
+            Some(podcast_name)
+        } else {
+            None
+        }
+    }
+
+    pub fn try_new_from_play(play: &Play) -> Option<Box<dyn PlayGroup>> {
+        if let Some(podcast_name) = Podcast::get_metadata_from_play(play) {
+            Some(Box::new(Podcast::new(podcast_name)))
+        } else {
+            None
+        }
+    }
+
     pub fn generate_hash(podcast_name: &str) -> String {
         format!("{}", podcast_name)
     }

@@ -44,14 +44,11 @@ impl Play {
 
     pub fn new_play_group(&self, group_type: &GroupType) -> Option<Box<dyn PlayGroup>> {
         match group_type {
-            GroupType::Album => Album::try_new_from_options(
-                self.master_metadata_album_album_name.as_deref(),
-                self.master_metadata_album_artist_name.as_deref(),
-            ),
-            GroupType::Artist => self.generate_key_artist(),
-            GroupType::Episode => self.generate_key_episode(),
-            GroupType::Podcast => self.generate_key_podcast(),
-            GroupType::Song => self.generate_key_song(),
+            GroupType::Album => Album::try_new_from_play(self),
+            GroupType::Artist => Artist::try_new_from_play(self),
+            GroupType::Episode => Episode::try_new_from_play(self),
+            GroupType::Podcast => Podcast::try_new_from_play(self),
+            GroupType::Song => Song::try_new_from_play(self),
         }
     }
 
@@ -64,7 +61,7 @@ impl Play {
             return Err(KeyGenerationError::MissingArtistName);
         };
 
-        let key = Album::generate(album_name, artist_name);
+        let key = Album::generate_hash(album_name, artist_name);
 
         Ok(key)
     }
@@ -74,7 +71,7 @@ impl Play {
             return Err(KeyGenerationError::MissingArtistName);
         };
 
-        let key = Artist::generate(artist_name);
+        let key = Artist::generate_hash(artist_name);
 
         Ok(key)
     }

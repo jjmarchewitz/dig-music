@@ -27,6 +27,8 @@ pub trait PlayGroup: Debug + Sync + Send {
 
     fn get_aggregated_data(&mut self) -> &AggregatedData;
     fn get_aggregated_data_mut(&mut self) -> &mut AggregatedData;
+
+    fn get_metadata(&self) -> GroupMetaData;
 }
 
 pub enum GroupType {
@@ -35,6 +37,28 @@ pub enum GroupType {
     Episode,
     Podcast,
     Song,
+}
+
+pub enum GroupMetaData<'a> {
+    Album {
+        album_name: &'a str,
+        artist_name: &'a str,
+    },
+    Artist {
+        artist_name: &'a str,
+    },
+    Episode {
+        episode_name: &'a str,
+        podcast_name: &'a str,
+    },
+    Podcast {
+        podcast_name: &'a str,
+    },
+    Song {
+        song_name: &'a str,
+        album_name: &'a str,
+        artist_name: &'a str,
+    },
 }
 
 pub fn group_plays_together(plays: Vec<Play>, group_type: GroupType) -> Vec<Box<dyn PlayGroup>> {
@@ -48,9 +72,13 @@ pub fn group_plays_together(plays: Vec<Play>, group_type: GroupType) -> Vec<Box<
         if let Some(play_group) = grouped_data.get_mut(key.as_str()) {
             play_group.add_play(play);
         } else {
-            // let pg: Box<dyn PlayGroup> = match group_type {
-            //     GroupType::Album => Album::new(album_name, artist_name)
-            // }
+            let Some(mut pg) = play.new_play_group(&group_type) else {
+                continue;
+            };
+
+            pg.add_play(play);
+
+            grouped_data.insert(key, pg);
         }
     }
 

@@ -1,4 +1,4 @@
-use super::{GroupType, PlayGroup};
+use super::{GroupMetaData, GroupType, PlayGroup};
 use crate::aggregate::AggregatedData;
 use crate::Play;
 
@@ -30,6 +30,14 @@ impl PlayGroup for Song {
     fn get_aggregated_data_mut(&mut self) -> &mut AggregatedData {
         &mut self.aggregated_data
     }
+
+    fn get_metadata(&self) -> GroupMetaData {
+        GroupMetaData::Song {
+            song_name: self.song_name.as_str(),
+            album_name: self.album_name.as_str(),
+            artist_name: self.artist_name.as_str(),
+        }
+    }
 }
 
 impl Song {
@@ -41,6 +49,27 @@ impl Song {
             ..Default::default()
         }
     }
+
+    pub fn get_metadata_from_play(play: &Play) -> Option<(&str, &str, &str)> {
+        if let (Some(song_name), Some(album_name), Some(artist_name)) = (
+            &play.master_metadata_track_name,
+            &play.master_metadata_album_album_name,
+            &play.master_metadata_album_artist_name,
+        ) {
+            Some((song_name, album_name, artist_name))
+        } else {
+            None
+        }
+    }
+
+    pub fn try_new_from_play(play: &Play) -> Option<Box<dyn PlayGroup>> {
+        if let Some((song_name, album_name, artist_name)) = Song::get_metadata_from_play(play) {
+            Some(Box::new(Song::new(song_name, album_name, artist_name)))
+        } else {
+            None
+        }
+    }
+
     pub fn generate_hash(song_name: &str, album_name: &str, artist_name: &str) -> String {
         format!("{}//{}//{}", song_name, album_name, artist_name)
     }
