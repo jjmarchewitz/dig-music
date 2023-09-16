@@ -22,7 +22,7 @@ impl PlayGroup for Episode {
         self.aggregated_data.add_play(play);
     }
 
-    fn get_aggregated_data(&mut self) -> &AggregatedData {
+    fn get_aggregated_data(&self) -> &AggregatedData {
         &self.aggregated_data
     }
 

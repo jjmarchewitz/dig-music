@@ -8,58 +8,58 @@ use std::{
 use crate::Play;
 
 #[derive(Debug)]
-pub struct Counter<T: Default + Debug> {
-    accumulator: T,
+pub struct Accumulator<T: Default + Debug> {
+    pub total: T,
     num_times_play_added: u64,
 }
 
-impl<T: Debug + Default> Counter<T> {
+impl<T: Debug + Default> Accumulator<T> {
     fn increment_play_count(&mut self) {
         self.num_times_play_added += 1
     }
 }
 
-impl<T: Debug + Default> Default for Counter<T> {
+impl<T: Debug + Default> Default for Accumulator<T> {
     fn default() -> Self {
         Self {
-            accumulator: T::default(),
+            total: T::default(),
             num_times_play_added: 0,
         }
     }
 }
 
-impl<T: Debug + Default> Deref for Counter<T> {
+impl<T: Debug + Default> Deref for Accumulator<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.accumulator
+        &self.total
     }
 }
 
-impl<T: Debug + Default> DerefMut for Counter<T> {
+impl<T: Debug + Default> DerefMut for Accumulator<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.accumulator
+        &mut self.total
     }
 }
 
 #[derive(Debug, Default)]
 pub struct AggregatedData {
-    pub total_ms_played: Counter<u64>,
-    pub total_plays: u64,
+    pub ms_played: Accumulator<u64>,
+    pub play_count: u64,
     pub start_reason: HashMap<String, u64>,
     pub end_reason: HashMap<String, u64>,
-    pub num_shuffles: Counter<u64>,
-    pub num_skips: Counter<u64>,
+    pub num_shuffles: Accumulator<u64>,
+    pub num_skips: Accumulator<u64>,
     pub timestamps: Vec<DateTime<Utc>>,
     pub conn_country: HashMap<String, u64>,
 }
 
 impl AggregatedData {
     pub fn add_play(&mut self, play: Play) {
-        *self.total_ms_played += play.ms_played;
-        self.total_ms_played.increment_play_count();
+        *self.ms_played += play.ms_played;
+        self.ms_played.increment_play_count();
 
-        self.total_plays += 1;
+        self.play_count += 1;
 
         // If this Play has `start_reason` data, add it
         if let Some(c) = self.start_reason.get_mut(play.reason_start.as_str()) {

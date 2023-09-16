@@ -15,6 +15,7 @@ pub fn load_plays(path_to_zip: PathBuf) -> Result<Vec<Play>, ()> {
     let temp: Vec<Play> = song_data
         .into_par_iter()
         .flat_map(|file_data| {
+            // TODO: get rid of this unwrap
             let plays: Vec<Play> = serde_json::from_str::<Vec<Play>>(&file_data).unwrap();
             plays.into_par_iter()
         })
