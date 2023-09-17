@@ -1,5 +1,5 @@
 [package]
-name = "dig-music-cli"
+name = "dig-music"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 clap = { version = "~4.4", features = ["derive"] }
 color-eyre = "~0.6"
-dig-music = { version = "0.1", path = "../dig-music" }
+dig-music-lib = { version = "0.1", path = "../lib" }
 eyre = "~0.6"
 rayon = "1.7.0"

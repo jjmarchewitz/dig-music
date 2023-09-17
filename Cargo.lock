@@ -400,9 +400,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.4.2"
+version = "4.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a13b88d2c62ff462f88e4a121f17a82c1af05693a2f192b5c38d14de73c19f6"
+checksum = "84ed82781cea27b43c9b106a979fe450a13a31aab0500595fb3fc06616de08e6"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -749,7 +749,19 @@ dependencies = [
 name = "dig-music"
 version = "0.1.0"
 dependencies = [
+ "clap",
+ "color-eyre",
+ "dig-music-lib",
+ "eyre",
+ "rayon",
+]
+
+[[package]]
+name = "dig-music-lib"
+version = "0.1.0"
+dependencies = [
  "chrono",
+ "clap",
  "md5",
  "rayon",
  "regex",
@@ -758,17 +770,6 @@ dependencies = [
  "serde_with",
  "thiserror",
  "zip",
-]
-
-[[package]]
-name = "dig-music-cli"
-version = "0.1.0"
-dependencies = [
- "clap",
- "color-eyre",
- "dig-music",
- "eyre",
- "rayon",
 ]
 
 [[package]]

@@ -1,27 +1,29 @@
 use crate::Play;
 use rayon::prelude::*;
 use regex::Regex;
+use serde_json;
 use std::{
     fs::File,
     io::Read,
     path::{Path, PathBuf},
 };
+use thiserror::Error;
 use zip::ZipArchive;
 
-pub fn load_plays(path_to_zip: PathBuf) -> Result<Vec<Play>, ()> {
+pub fn load_plays(path_to_zip: PathBuf) -> Result<Vec<Play>, LoadError> {
     let mut archive = load_archive(&path_to_zip);
     let song_data = extract_song_data(&mut archive);
+    let mut plays: Vec<Play> = Vec::new();
 
-    let temp: Vec<Play> = song_data
-        .into_par_iter()
-        .flat_map(|file_data| {
-            // TODO: get rid of this unwrap
-            let plays: Vec<Play> = serde_json::from_str::<Vec<Play>>(&file_data).unwrap();
-            plays.into_par_iter()
-        })
-        .collect();
+    // TODO: rewrite this as iterator
+    for file_data in song_data.into_iter() {
+        match serde_json::from_str::<Vec<Play>>(&file_data) {
+            Ok(v) => plays.extend(v),
+            Err(_) => return Err(LoadError::ParseError),
+        }
+    }
 
-    Ok(temp)
+    Ok(plays)
 }
 
 fn load_archive<P: AsRef<Path>>(path: &P) -> ZipArchive<File> {
@@ -62,4 +64,10 @@ fn extract_song_data(archive: &mut ZipArchive<File>) -> Vec<String> {
         .collect();
 
     file_contents
+}
+
+#[derive(Debug, Error)]
+pub enum LoadError {
+    #[error("unable to parse your data.")]
+    ParseError,
 }

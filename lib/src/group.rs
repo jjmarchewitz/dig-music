@@ -1,5 +1,9 @@
-use crate::{aggregate::AggregatedData, group, Play};
-use std::{collections::HashMap, hash::Hash};
+use crate::{aggregate::AggregatedData, Play};
+use clap::ValueEnum;
+use std::{
+    collections::HashMap,
+    fmt::{write, Display},
+};
 use thiserror::Error;
 
 mod album;
@@ -31,6 +35,7 @@ pub trait PlayGroup: Debug + Sync + Send {
     fn get_metadata(&self) -> GroupMetaData;
 }
 
+#[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum GroupType {
     Album,
     Artist,
@@ -61,6 +66,32 @@ pub enum GroupMetaData<'a> {
     },
 }
 
+impl<'a> Display for GroupMetaData<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GroupMetaData::Album {
+                album_name,
+                artist_name,
+            } => write!(f, "\"{}\" by {}", album_name, artist_name),
+            GroupMetaData::Artist { artist_name } => write!(f, "{}", artist_name),
+            GroupMetaData::Episode {
+                episode_name,
+                podcast_name,
+            } => write!(f, "\"{}\" by {}", episode_name, podcast_name),
+            GroupMetaData::Podcast { podcast_name } => write!(f, "{}", podcast_name),
+            GroupMetaData::Song {
+                song_name,
+                album_name,
+                artist_name,
+            } => write!(
+                f,
+                "\"{}\" on the album \"{}\" by {}",
+                song_name, album_name, artist_name
+            ),
+        }
+    }
+}
+
 pub fn group_plays_together(plays: Vec<Play>, group_type: GroupType) -> Vec<Box<dyn PlayGroup>> {
     let mut grouped_data: HashMap<String, Box<dyn PlayGroup>> = HashMap::new();
 
@@ -81,8 +112,6 @@ pub fn group_plays_together(plays: Vec<Play>, group_type: GroupType) -> Vec<Box<
             grouped_data.insert(key, pg);
         }
     }
-
-    dbg!(&grouped_data);
 
     let grouped_data: Vec<Box<dyn PlayGroup>> =
         grouped_data.into_par_iter().map(|(_, v)| v).collect();

@@ -1,4 +1,4 @@
 [workspace]
 
-members = ["dig-music", "cli", "app/src-tauri"]
+members = ["lib", "cli", "app/src-tauri"]
 resolver = "2"
