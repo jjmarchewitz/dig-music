@@ -11,7 +11,7 @@ use thiserror::Error;
 use zip::ZipArchive;
 
 pub fn load_plays(path_to_zip: PathBuf) -> Result<Vec<Play>, LoadError> {
-    let mut archive = load_archive(&path_to_zip);
+    let mut archive = load_archive(&path_to_zip)?;
     let song_data = extract_song_data(&mut archive);
     let mut plays: Vec<Play> = Vec::new();
 
@@ -26,9 +26,16 @@ pub fn load_plays(path_to_zip: PathBuf) -> Result<Vec<Play>, LoadError> {
     Ok(plays)
 }
 
-fn load_archive<P: AsRef<Path>>(path: &P) -> ZipArchive<File> {
-    let file = File::open(path).unwrap();
-    ZipArchive::new(file).unwrap()
+fn load_archive<P: AsRef<Path>>(path: &P) -> Result<ZipArchive<File>, LoadError> {
+    let Ok(file) = File::open(path) else {
+        return Err(LoadError::UnableToOpenFile);
+    };
+
+    let Ok(zip) = ZipArchive::new(file) else {
+        return Err(LoadError::UnableToLoadZipData);
+    };
+
+    Ok(zip)
 }
 
 // TODO: Have multiple versions of this for different versions of the .zip that Spotify spits out
@@ -70,4 +77,10 @@ fn extract_song_data(archive: &mut ZipArchive<File>) -> Vec<String> {
 pub enum LoadError {
     #[error("unable to parse your data.")]
     ParseError,
+
+    #[error("unable to open the file at the given path.")]
+    UnableToOpenFile,
+
+    #[error("unable to load the data from the .zip file at the given path.")]
+    UnableToLoadZipData,
 }

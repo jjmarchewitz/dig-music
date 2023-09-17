@@ -1,5 +1,5 @@
 use crate::group::{Album, Artist, Episode, GroupType, Podcast, Song};
-use crate::group::{KeyGenerationError, PlayGroup};
+use crate::{KeyGenerationError, PlayGroup};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::net::Ipv4Addr;

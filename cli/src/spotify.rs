@@ -1,48 +1,43 @@
+use std::path::PathBuf;
+
 use clap::Args;
 use eyre::Result;
-use rayon::prelude::*;
+// use rayon::prelude::*;
 
-use dig_music_lib::{GroupType, PlayGroup, SortOrder};
+use dig_music_lib::{GroupType, SortBy, SortOrder};
 
 #[derive(Args, Debug)]
 pub struct SpotifyArgs {
     /// The path to the .zip file that Spotify gave you. This MUST be for extended listen history ONLY. Don't use the .zip for your general account data.
-    pub path: String,
+    pub path: PathBuf,
 
     /// How you want your listen history to be grouped together.
     pub group_type: GroupType,
 
+    /// How to sort the results
+    #[arg(short, long, value_enum, default_value_t = SortBy::Time)]
+    pub sort: SortBy,
+
     /// The ordering of your results
     #[arg(short, long, value_enum, default_value_t = SortOrder::Descending)]
-    pub sort: SortOrder,
+    pub order: SortOrder,
 
     /// The maximum number of results to show.
     #[arg(long)]
     pub limit: Option<usize>,
+    // pub csv: Option<>
 }
 
 pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
-    // TODO: define error type for load_plays
-    let plays = dig_music_lib::load_plays(args.path.into())?;
+    let plays = dig_music_lib::load_plays(args.path)?;
 
-    // TODO: Turn this into a Vec<PlayGroup> where PlayGroup is an enum
-    let mut grouped_data = dig_music_lib::group_plays_together(plays, GroupType::Artist);
+    let grouped_data = dig_music_lib::group_plays_together(plays, args.group_type);
 
-    grouped_data.par_sort_by_key(|e| e.get_aggregated_data().ms_played.total);
+    let sorted_data = dig_music_lib::sort_data(grouped_data, args.sort, args.order);
 
-    let grouped_data: Vec<(usize, Box<dyn PlayGroup>)> = {
-        let ranks_iterator = 1..(grouped_data.len() + 1);
-        let zipped_iterator = ranks_iterator.rev().zip(grouped_data.into_iter());
-
-        match args.sort {
-            SortOrder::Ascending => zipped_iterator.collect(),
-            SortOrder::Descending => zipped_iterator.rev().collect(),
-        }
-    };
-
-    for (rank, group) in grouped_data.iter() {
+    for (rank, group) in sorted_data.iter() {
         let rank_str = format!("{}.", rank);
-        println!("{:7}{}", rank_str, group.get_metadata().to_string());
+        println!("{} {}", rank_str, group.get_metadata().to_string());
         println!(
             "Time: {}, Plays: {}\n",
             group.get_aggregated_data().display_ms_played(),

@@ -714,16 +714,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "deep-spotify-bin"
-version = "0.0.0"
-dependencies = [
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
-]
-
-[[package]]
 name = "deranged"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -754,6 +744,16 @@ dependencies = [
  "dig-music-lib",
  "eyre",
  "rayon",
+]
+
+[[package]]
+name = "dig-music-app"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
 ]
 
 [[package]]

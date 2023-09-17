@@ -1,6 +1,7 @@
-use std::fmt::Display;
-
+use crate::PlayGroup;
 use clap::ValueEnum;
+use rayon::prelude::*;
+use std::fmt::Display;
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum SortOrder {
@@ -31,3 +32,30 @@ impl Display for SortOrder {
 //         }
 //     }
 // }
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum SortBy {
+    Plays,
+    Time,
+}
+
+pub fn sort_data(
+    grouped_data: Vec<Box<dyn PlayGroup>>,
+    sort: SortBy,
+    order: SortOrder,
+) -> Vec<(usize, Box<dyn PlayGroup>)> {
+    let ranks_iterator = 1..(grouped_data.len() + 1);
+    let zipped_iterator = ranks_iterator.rev().zip(grouped_data.into_iter());
+
+    match order {
+        SortOrder::Ascending => zipped_iterator.collect(),
+        SortOrder::Descending => zipped_iterator.rev().collect(),
+    }
+}
+
+fn get_sort_fn(sort: SortBy) -> impl Fn(Box<dyn PlayGroup>) -> Box<dyn Ord> {
+    match sort {
+        SortBy::Plays => |e: Box<dyn PlayGroup>| Box::new(e.get_aggregated_data().play_count),
+        SortBy::Time => todo!(),
+    }
+}

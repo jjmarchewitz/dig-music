@@ -1,9 +1,6 @@
 use crate::{aggregate::AggregatedData, Play};
 use clap::ValueEnum;
-use std::{
-    collections::HashMap,
-    fmt::{write, Display},
-};
+use std::{collections::HashMap, fmt::Display};
 use thiserror::Error;
 
 mod album;
