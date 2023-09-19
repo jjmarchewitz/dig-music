@@ -40,22 +40,20 @@ pub enum SortBy {
 }
 
 pub fn sort_data(
-    grouped_data: Vec<Box<dyn PlayGroup>>,
+    mut grouped_data: Vec<Box<dyn PlayGroup>>,
     sort: SortBy,
     order: SortOrder,
 ) -> Vec<(usize, Box<dyn PlayGroup>)> {
+    match sort {
+        SortBy::Plays => grouped_data.par_sort_by_key(|e| e.get_aggregated_data().play_count),
+        SortBy::Time => grouped_data.par_sort_by_key(|e| e.get_aggregated_data().ms_played.total),
+    }
+
     let ranks_iterator = 1..(grouped_data.len() + 1);
     let zipped_iterator = ranks_iterator.rev().zip(grouped_data.into_iter());
 
     match order {
         SortOrder::Ascending => zipped_iterator.collect(),
         SortOrder::Descending => zipped_iterator.rev().collect(),
-    }
-}
-
-fn get_sort_fn(sort: SortBy) -> impl Fn(Box<dyn PlayGroup>) -> Box<dyn Ord> {
-    match sort {
-        SortBy::Plays => |e: Box<dyn PlayGroup>| Box::new(e.get_aggregated_data().play_count),
-        SortBy::Time => todo!(),
     }
 }

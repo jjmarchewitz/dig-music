@@ -4,8 +4,9 @@ use clap::Args;
 use eyre::Result;
 // use rayon::prelude::*;
 
-use dig_music_lib::{GroupType, SortBy, SortOrder};
+use dig_music_lib::{GroupType, PlayGroup, SortBy, SortOrder};
 
+// TODO: exporting to playlist (track URIs)
 #[derive(Args, Debug)]
 pub struct SpotifyArgs {
     /// The path to the .zip file that Spotify gave you. This MUST be for extended listen history ONLY. Don't use the .zip for your general account data.
@@ -25,7 +26,14 @@ pub struct SpotifyArgs {
     /// The maximum number of results to show.
     #[arg(long)]
     pub limit: Option<usize>,
-    // pub csv: Option<>
+
+    /// Path to create a CSV file at
+    #[arg(long)]
+    pub csv: Option<PathBuf>,
+
+    /// Path to create a XLSX file at
+    #[arg(long)]
+    pub xlsx: Option<PathBuf>,
 }
 
 pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
@@ -35,21 +43,25 @@ pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
 
     let sorted_data = dig_music_lib::sort_data(grouped_data, args.sort, args.order);
 
-    for (rank, group) in sorted_data.iter() {
+    print_data(sorted_data, args.limit);
+
+    Ok(())
+}
+
+fn print_data(data: Vec<(usize, Box<dyn PlayGroup>)>, limit: Option<usize>) {
+    for (index, (rank, group)) in data.iter().enumerate() {
         let rank_str = format!("{}.", rank);
-        println!("{} {}", rank_str, group.get_metadata().to_string());
+        println!("\n{} {}", rank_str, group.get_metadata().to_string());
         println!(
-            "Time: {}, Plays: {}\n",
+            "Plays: {}, Time: {}",
+            group.get_aggregated_data().play_count,
             group.get_aggregated_data().display_ms_played(),
-            group.get_aggregated_data().play_count
         );
 
-        if let Some(limit) = args.limit {
-            if *rank >= limit {
+        if let Some(limit) = limit {
+            if limit == 0 || index >= limit - 1 {
                 break;
             }
         }
     }
-
-    Ok(())
 }
