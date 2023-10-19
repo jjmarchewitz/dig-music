@@ -10,4 +10,5 @@ clap = { version = "~4.4", features = ["derive"] }
 color-eyre = "~0.6"
 dig-music-lib = { version = "0.1", path = "../lib" }
 eyre = "~0.6"
-rayon = "1.7.0"
+polars = { version = "~0.32", features = ["csv", "json", "lazy"] }
+rayon = "1.8.0"

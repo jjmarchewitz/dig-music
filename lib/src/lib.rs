@@ -5,7 +5,7 @@ mod load;
 mod play;
 mod sort;
 
-pub use group::{group_plays_together, GroupType, KeyGenerationError, PlayGroup};
-pub use load::load_plays;
+pub use group::GroupType;
+pub use load::load_plays_to_df;
 pub use play::Play;
-pub use sort::{sort_data, SortBy, SortOrder};
+pub use sort::{SortBy, SortOrder};

@@ -2,9 +2,10 @@ use std::path::PathBuf;
 
 use clap::Args;
 use eyre::Result;
-// use rayon::prelude::*;
+use polars::prelude::*;
+use std::fs::File;
 
-use dig_music_lib::{GroupType, PlayGroup, SortBy, SortOrder};
+use dig_music_lib::{GroupType, SortBy, SortOrder};
 
 // TODO: exporting to playlist (track URIs)
 #[derive(Args, Debug)]
@@ -30,38 +31,31 @@ pub struct SpotifyArgs {
     /// Path to create a CSV file at
     #[arg(long)]
     pub csv: Option<PathBuf>,
-
-    /// Path to create a XLSX file at
-    #[arg(long)]
-    pub xlsx: Option<PathBuf>,
 }
+
+// TODO: filter-plays
+// TODO: filter-results
+// /// Path to create a XLSX file at
+// #[arg(long)]
+// pub xlsx: Option<PathBuf>,
 
 pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
-    let plays = dig_music_lib::load_plays(args.path)?;
+    let mut df = dig_music_lib::load_plays_to_df(args.path)?;
 
-    let grouped_data = dig_music_lib::group_plays_together(plays, args.group_type);
+    // let plays = dig_music_lib::load_plays(args.path)?;
+    // let grouped_data = dig_music_lib::group_plays_together(plays, args.group_type);
+    // let sorted_data = dig_music_lib::sort_data(grouped_data, args.sort, args.order);
 
-    let sorted_data = dig_music_lib::sort_data(grouped_data, args.sort, args.order);
+    // print_data(sorted_data, args.limit);
 
-    print_data(sorted_data, args.limit);
+    if let Some(csv_path) = args.csv {
+        let mut file = File::create(csv_path).expect("could not create CSV file");
+
+        CsvWriter::new(&mut file)
+            .has_header(true)
+            .with_delimiter(b',')
+            .finish(&mut df)?;
+    }
 
     Ok(())
-}
-
-fn print_data(data: Vec<(usize, Box<dyn PlayGroup>)>, limit: Option<usize>) {
-    for (index, (rank, group)) in data.iter().enumerate() {
-        let rank_str = format!("{}.", rank);
-        println!("\n{} {}", rank_str, group.get_metadata().to_string());
-        println!(
-            "Plays: {}, Time: {}",
-            group.get_aggregated_data().play_count,
-            group.get_aggregated_data().display_ms_played(),
-        );
-
-        if let Some(limit) = limit {
-            if limit == 0 || index >= limit - 1 {
-                break;
-            }
-        }
-    }
 }
