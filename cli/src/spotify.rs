@@ -1,9 +1,9 @@
+mod csv;
+
 use std::path::PathBuf;
 
 use clap::Args;
 use eyre::Result;
-use polars::prelude::*;
-use std::fs::File;
 
 use dig_music_lib::{GroupType, SortBy, SortOrder};
 
@@ -35,9 +35,6 @@ pub struct SpotifyArgs {
 
 // TODO: filter-plays
 // TODO: filter-results
-// /// Path to create a XLSX file at
-// #[arg(long)]
-// pub xlsx: Option<PathBuf>,
 
 pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
     let mut df = dig_music_lib::load_plays_to_df(args.path)?;
@@ -49,12 +46,7 @@ pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
     // print_data(sorted_data, args.limit);
 
     if let Some(csv_path) = args.csv {
-        let mut file = File::create(csv_path).expect("could not create CSV file");
-
-        CsvWriter::new(&mut file)
-            .has_header(true)
-            .with_delimiter(b',')
-            .finish(&mut df)?;
+        csv::write_df_to_csv(&mut df, &csv_path)?;
     }
 
     Ok(())
