@@ -31,6 +31,9 @@ pub struct SpotifyArgs {
     /// Path to create a CSV file at
     #[arg(long)]
     pub csv: Option<PathBuf>,
+    // jake mode: every combo of group/sort-by
+    // "meta" in addition to "song", "album", etc. meta statistics about your account
+    // (i.e. total listen time overall).
 }
 
 // TODO: filter-plays
