@@ -2,6 +2,10 @@
 target
 test-data
 
+# Crap
+.vscode
+.DS_Store
+
 # Logs
 logs
 *.log
