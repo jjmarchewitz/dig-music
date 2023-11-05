@@ -23,10 +23,28 @@ impl GroupType {
 
     fn get_aggs(&self) -> Vec<Expr> {
         match self {
-            Self::Album => vec![col("*")],
-            Self::Artist => vec![col("*")],
-            Self::Episode => vec![col("*")],
-            Self::Podcast => vec![col("*")],
+            Self::Album => vec![
+                col("ms_played").sum(),
+                col("album_name").first(),
+                all().exclude(vec!["ms_played", "album_name"]),
+            ],
+            Self::Artist => vec![
+                col("ms_played").sum(),
+                col("album_name").first(),
+                col("artist_name").first(),
+                all().exclude(vec!["ms_played", "album_name", "artist_name"]),
+            ],
+            Self::Episode => vec![
+                col("ms_played").sum(),
+                col("podcast_name").first(),
+                col("episode_name").first(),
+                all().exclude(vec!["ms_played", "podcast_name", "episode_name"]),
+            ],
+            Self::Podcast => vec![
+                col("ms_played").sum(),
+                col("podcast_name").first(),
+                all().exclude(vec!["ms_played", "podcast_name"]),
+            ],
             Self::Song => vec![
                 col("ms_played").sum(),
                 col("album_name").first(),

@@ -27,16 +27,7 @@ macro_rules! struct_to_dataframe {
 
 pub fn load_plays_to_df(path_to_zip: PathBuf) -> Result<DataFrame, LoadError> {
     let mut archive = load_archive(&path_to_zip)?;
-    let song_data = extract_song_data(&mut archive);
-    let mut plays: Vec<Play> = Vec::new();
-
-    // TODO: rewrite this as iterator
-    for file_data in song_data.into_iter() {
-        match serde_json::from_str::<Vec<Play>>(&file_data) {
-            Ok(v) => plays.extend(v),
-            Err(_) => return Err(LoadError::ParseError),
-        }
-    }
+    let plays = extract_song_data(&mut archive)?;
 
     let mut df = struct_to_dataframe!(
         plays,
@@ -88,7 +79,7 @@ fn load_archive<P: AsRef<Path>>(path: &P) -> Result<zip::ZipArchive<File>, LoadE
 }
 
 // TODO: Have multiple versions of this for different versions of the .zip that Spotify spits out
-fn extract_song_data(archive: &mut zip::ZipArchive<File>) -> Vec<String> {
+fn extract_song_data(archive: &mut zip::ZipArchive<File>) -> Result<Vec<Play>, LoadError> {
     let re = Regex::new(r"Streaming_History_Audio_.*\.json").unwrap();
 
     let song_data_file_names: Vec<String> = archive
@@ -119,15 +110,29 @@ fn extract_song_data(archive: &mut zip::ZipArchive<File>) -> Vec<String> {
         })
         .collect();
 
-    file_contents
+    let plays: Vec<Play> = file_contents
+        .into_par_iter()
+        .map(
+            |contents| match serde_json::from_str::<Vec<Play>>(&contents) {
+                Ok(v) => Ok(v),
+                Err(_) => Err(LoadError::ParseError),
+            },
+        )
+        .collect::<Result<Vec<Vec<Play>>, LoadError>>()?
+        .into_par_iter()
+        .flatten()
+        .collect();
+
+    Ok(plays)
 }
 
 fn rename_columns(df: &mut DataFrame) -> PolarsResult<&mut DataFrame> {
     Ok(df
+        .rename("conn_country", "connected_from_country")?
+        .rename("episode_show_name", "podcast_name")?
+        .rename("ip_addr_decrypted", "ip_address")?
         .rename("master_metadata_album_album_name", "album_name")?
         .rename("master_metadata_album_artist_name", "artist_name")?
         .rename("master_metadata_track_name", "track_name")?
-        .rename("conn_country", "connected_from_country")?
-        .rename("episode_show_name", "podcast_name")?
         .rename("ts", "timestamp")?)
 }
