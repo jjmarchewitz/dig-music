@@ -1,11 +1,13 @@
-mod aggregate;
+pub mod error;
 mod filter;
+mod fs;
 mod group;
-mod load;
+mod meta;
 mod play;
 mod sort;
 
-pub use group::GroupType;
-pub use load::load_plays_to_df;
+pub use fs::{load_plays_to_df, write_df_to_csv};
+pub use group::{group_plays, GroupType};
+pub use meta::print_meta_analysis;
 pub use play::Play;
 pub use sort::{SortBy, SortOrder};

@@ -2,3 +2,9 @@
 
 members = ["lib", "cli", "app/src-tauri"]
 resolver = "2"
+
+[workspace.dependencies]
+polars = { version = "~0.34", features = ["csv", "json", "lazy", "list_count"] }
+clap = { version = "~4.4", features = ["derive"] }
+thiserror = "~1.0"
+rayon = "~1.8"
