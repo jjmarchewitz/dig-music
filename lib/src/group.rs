@@ -1,3 +1,4 @@
+use crate::columns as col;
 use polars::prelude::*;
 use std::fmt::Debug;
 
@@ -13,53 +14,64 @@ pub enum GroupType {
 impl GroupType {
     fn get_column_name(&self) -> &str {
         match self {
-            Self::Album => "album_name",
-            Self::Artist => "artist_name",
-            Self::Episode => "spotify_episode_uri",
-            Self::Podcast => "podcast_name",
-            Self::Song => "spotify_track_uri",
+            Self::Album => col::ALBUM_NAME,
+            Self::Artist => col::ARTIST_NAME,
+            Self::Episode => col::SPOTIFY_EPISODE_URI,
+            Self::Podcast => col::PODCAST_NAME,
+            Self::Song => col::SPOTIFY_TRACK_URI,
         }
     }
 
     fn get_aggs(&self) -> Vec<Expr> {
         match self {
             Self::Album => vec![
-                col("ms_played").sum(),
-                col("album_name").first(),
-                all().exclude(vec!["ms_played", "album_name"]),
+                col(col::MS_PLAYED).sum(),
+                col(col::ALBUM_NAME).first(),
+                all().exclude(vec![col::MS_PLAYED, col::ALBUM_NAME]),
             ],
             Self::Artist => vec![
-                col("ms_played").sum(),
-                col("album_name").first(),
-                col("artist_name").first(),
-                all().exclude(vec!["ms_played", "album_name", "artist_name"]),
+                col(col::MS_PLAYED).sum(),
+                col(col::ALBUM_NAME).first(),
+                col(col::ARTIST_NAME).first(),
+                all().exclude(vec![col::MS_PLAYED, col::ALBUM_NAME, col::ARTIST_NAME]),
             ],
             Self::Episode => vec![
-                col("ms_played").sum(),
-                col("podcast_name").first(),
-                col("episode_name").first(),
-                all().exclude(vec!["ms_played", "podcast_name", "episode_name"]),
+                col(col::MS_PLAYED).sum(),
+                col(col::PODCAST_NAME).first(),
+                col(col::EPISODE_NAME).first(),
+                all().exclude(vec![col::MS_PLAYED, col::PODCAST_NAME, col::EPISODE_NAME]),
             ],
             Self::Podcast => vec![
-                col("ms_played").sum(),
-                col("podcast_name").first(),
-                all().exclude(vec!["ms_played", "podcast_name"]),
+                col(col::MS_PLAYED).sum(),
+                col(col::PODCAST_NAME).first(),
+                all().exclude(vec![col::MS_PLAYED, col::PODCAST_NAME]),
             ],
             Self::Song => vec![
-                col("ms_played").sum(),
-                col("album_name").first(),
-                col("artist_name").first(),
-                col("track_name").first(),
-                all().exclude(vec!["ms_played", "album_name", "artist_name", "track_name"]),
+                col(col::MS_PLAYED).sum(),
+                col(col::ALBUM_NAME).first(),
+                col(col::ARTIST_NAME).first(),
+                col(col::TRACK_NAME).first(),
+                all().exclude(vec![
+                    col::MS_PLAYED,
+                    col::ALBUM_NAME,
+                    col::ARTIST_NAME,
+                    col::TRACK_NAME,
+                ]),
             ],
         }
     }
 }
 
 pub fn group_plays(df: DataFrame, group_by: GroupType) -> PolarsResult<DataFrame> {
+    dbg!(df.get_column_names());
+
+    let aggs = group_by.get_aggs();
+
+    dbg!(aggs);
+
     df.lazy()
         .group_by([group_by.get_column_name()])
         .agg(group_by.get_aggs())
-        .with_columns(vec![col("timestamp").list().len().alias("play_count")])
+        .with_column(col(col::TIMESTAMP).list().len().alias(col::PLAY_COUNT))
         .collect()
 }

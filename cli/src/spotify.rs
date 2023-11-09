@@ -39,8 +39,8 @@ pub struct SpotifyArgs {
     pub create_playlist: Option<String>,
 }
 
-// TODO: filter-plays
-// TODO: filter-results
+// TODO: --filter that can be used many times, get it into a Vec<Filter> or something.
+// Infer from the filter type if it should apply to plays or results
 
 pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
     let df = dig_music_lib::load_plays_to_df(args.path)?;
@@ -51,18 +51,18 @@ pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
         return Ok(());
     }
 
-    let mut df = dig_music_lib::group_plays(df, args.analysis_type.try_into()?)?;
+    let df = dig_music_lib::group_plays(df, args.analysis_type.try_into()?)?;
 
-    dbg!(df.head(Some(2)).get_columns());
+    let mut df = dig_music_lib::sort_grouped_data(df, args.sort, args.order.is_descending())?;
 
-    // let grouped_data = dig_music_lib::group_plays_together(plays, args.group_type);
-    // let sorted_data = dig_music_lib::sort_data(grouped_data, args.sort, args.order);
-    // print_data(sorted_data, args.limit);
+    // dbg!(df.head(Some(10)));
 
     if let Some(csv_path) = args.csv {
         // TODO: prep for CSV function
         dig_music_lib::write_df_to_csv(&mut df, &csv_path)?;
     }
+
+    println!("\nDone!\n");
 
     Ok(())
 }

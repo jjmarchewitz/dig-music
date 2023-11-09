@@ -1,3 +1,4 @@
+use crate::columns as col;
 use crate::{error::LoadError, Play};
 use ::zip;
 use polars::prelude::*;
@@ -26,8 +27,8 @@ macro_rules! struct_to_dataframe {
 }
 
 pub fn load_plays_to_df(path_to_zip: PathBuf) -> Result<DataFrame, LoadError> {
-    let mut archive = load_archive(&path_to_zip)?;
-    let plays = extract_song_data(&mut archive)?;
+    let archive = load_archive(&path_to_zip)?;
+    let plays = extract_song_data(archive)?;
 
     let mut df = struct_to_dataframe!(
         plays,
@@ -56,12 +57,12 @@ pub fn load_plays_to_df(path_to_zip: PathBuf) -> Result<DataFrame, LoadError> {
         ]
     )?;
 
+    rename_columns(&mut df)?;
+
     df = df
         .lazy()
-        .with_columns([col("ts").cast(DataType::Datetime(TimeUnit::Microseconds, None))])
+        .with_columns([col(col::TIMESTAMP).cast(DataType::Datetime(TimeUnit::Microseconds, None))])
         .collect()?;
-
-    rename_columns(&mut df)?;
 
     Ok(df)
 }
@@ -79,8 +80,8 @@ fn load_archive<P: AsRef<Path>>(path: &P) -> Result<zip::ZipArchive<File>, LoadE
 }
 
 // TODO: Have multiple versions of this for different versions of the .zip that Spotify spits out
-fn extract_song_data(archive: &mut zip::ZipArchive<File>) -> Result<Vec<Play>, LoadError> {
-    let re = Regex::new(r"Streaming_History_Audio_.*\.json").unwrap();
+fn extract_song_data(mut archive: zip::ZipArchive<File>) -> Result<Vec<Play>, LoadError> {
+    let re = Regex::new(r"Streaming_History_Audio_.*\.json")?;
 
     let song_data_file_names: Vec<String> = archive
         .file_names()
@@ -94,21 +95,24 @@ fn extract_song_data(archive: &mut zip::ZipArchive<File>) -> Result<Vec<Play>, L
         })
         .collect();
 
-    // TODO: rewrite this block based on this: https://doc.rust-lang.org/rust-by-example/error/iter_result.html#fail-the-entire-operation-with-collect
     // This cannot be made parallel because we can't have concurrent access to a single mutable reference.
     // In order to be parallel, the archive would need to have its contents read from multiple places at once.
     let file_contents: Vec<String> = song_data_file_names
         .into_iter()
         .map(|file_name| {
-            let mut file = archive.by_name(&file_name).unwrap();
+            let Ok(mut file) = archive.by_name(&file_name) else {
+                return Err(LoadError::UnableToLoadZipData);
+            };
 
             let mut content = String::default();
 
-            file.read_to_string(&mut content).unwrap();
+            if let Err(_) = file.read_to_string(&mut content) {
+                return Err(LoadError::UnableToLoadZipData);
+            }
 
-            content
+            Ok(content)
         })
-        .collect();
+        .collect::<Result<Vec<String>, LoadError>>()?;
 
     let plays: Vec<Play> = file_contents
         .into_par_iter()
@@ -128,11 +132,11 @@ fn extract_song_data(archive: &mut zip::ZipArchive<File>) -> Result<Vec<Play>, L
 
 fn rename_columns(df: &mut DataFrame) -> PolarsResult<&mut DataFrame> {
     Ok(df
-        .rename("conn_country", "connected_from_country")?
-        .rename("episode_show_name", "podcast_name")?
-        .rename("ip_addr_decrypted", "ip_address")?
-        .rename("master_metadata_album_album_name", "album_name")?
-        .rename("master_metadata_album_artist_name", "artist_name")?
-        .rename("master_metadata_track_name", "track_name")?
-        .rename("ts", "timestamp")?)
+        .rename("conn_country", col::CONN_COUNTRY)?
+        .rename("episode_show_name", col::PODCAST_NAME)?
+        .rename("ip_addr_decrypted", col::IP_ADDRESS)?
+        .rename("master_metadata_album_album_name", col::ALBUM_NAME)?
+        .rename("master_metadata_album_artist_name", col::ARTIST_NAME)?
+        .rename("master_metadata_track_name", col::TRACK_NAME)?
+        .rename("ts", col::TIMESTAMP)?)
 }

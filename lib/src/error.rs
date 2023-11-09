@@ -1,4 +1,5 @@
 use polars::error::PolarsError;
+use regex;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -23,4 +24,7 @@ pub enum LoadError {
 
     #[error("collecting data from the .zip into a DataFrame failed.")]
     FailedToCollectData,
+
+    #[error("this error should never happen. Error building regular expression that matches files in the .zip")]
+    RegexError(#[from] regex::Error),
 }

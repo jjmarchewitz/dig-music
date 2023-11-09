@@ -1,4 +1,6 @@
+use crate::columns as col;
 use clap::ValueEnum;
+use polars::prelude::*;
 use std::fmt::Display;
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -22,8 +24,34 @@ impl Display for SortOrder {
     }
 }
 
+impl SortOrder {
+    pub fn is_descending(&self) -> bool {
+        match self {
+            Self::Ascending => false,
+            Self::Descending => true,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum SortBy {
     Plays,
     Time,
+}
+
+impl SortBy {
+    fn get_column_name(&self) -> &str {
+        match self {
+            Self::Plays => col::PLAY_COUNT,
+            Self::Time => col::MS_PLAYED,
+        }
+    }
+}
+
+pub fn sort_grouped_data(
+    df: DataFrame,
+    sort_by: SortBy,
+    descending: bool,
+) -> PolarsResult<DataFrame> {
+    df.sort([sort_by.get_column_name()], descending, false)
 }
