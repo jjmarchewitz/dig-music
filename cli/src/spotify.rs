@@ -2,7 +2,7 @@ mod analysis_type;
 
 use analysis_type::AnalysisType;
 use clap::Args;
-use dig_music_lib::{SortBy, SortOrder};
+use dig_music_lib::{FilterOn, FilterSelection, SortBy, SortOrder};
 use eyre::Result;
 use std::path::PathBuf;
 
@@ -29,14 +29,31 @@ pub struct SpotifyArgs {
     /// Path to create a CSV file at
     #[arg(long)]
     pub csv: Option<PathBuf>,
-    // jake mode: every combo of group/sort-by
-    // "meta" in addition to "song", "album", etc. meta statistics about your account
-    // (i.e. total listen time overall).
+
+    /// TODO: jake mode: every combo of group/sort-by
+    #[arg(long)]
+    pub jake: bool,
 
     // TODO: export result DF to a playlist (track URIs)
     // use keyring, oauth2 crates and ask user to authenticate if they haven't already
     #[arg(long)]
     pub create_playlist: Option<String>,
+
+    /// TODO: Set the path of the zip file to persist between runs
+    pub set_zip_path: Option<PathBuf>,
+
+    /// TODO: Setup/auth a bunch of stuff
+    pub setup: bool,
+
+    /// TODO: Authenticate with Spotify
+    pub auth: bool,
+
+    /// TODO: Download album art to this folder
+    pub download_album_art: bool,
+
+    /// TODO: disable parts of this tool that only run with an internet connection
+    pub offline: bool,
+    // pub filter: Vec<FilterOn>,
 }
 
 // TODO: --filter that can be used many times, get it into a Vec<Filter> or something.
@@ -54,8 +71,6 @@ pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
     let df = dig_music_lib::group_plays(df, args.analysis_type.try_into()?)?;
 
     let mut df = dig_music_lib::sort_grouped_data(df, args.sort, args.order.is_descending())?;
-
-    // dbg!(df.head(Some(10)));
 
     if let Some(csv_path) = args.csv {
         // TODO: prep for CSV function
