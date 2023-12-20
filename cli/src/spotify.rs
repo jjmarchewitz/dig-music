@@ -59,10 +59,10 @@ pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
     // let sorted_data = dig_music_lib::sort_data(grouped_data, args.sort, args.order);
     // print_data(sorted_data, args.limit);
 
-    if let Some(csv_path) = args.csv {
-        // TODO: prep for CSV function
-        dig_music_lib::write_df_to_csv(&mut df, &csv_path)?;
-    }
+    // if let Some(csv_path) = args.csv {
+    //     // TODO: prep for CSV function
+    //     dig_music_lib::write_df_to_csv(&mut df, &csv_path)?;
+    // }
 
     Ok(())
 }
