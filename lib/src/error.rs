@@ -24,3 +24,15 @@ pub enum LoadError {
     #[error("collecting data from the .zip into a DataFrame failed.")]
     FailedToCollectData,
 }
+
+#[derive(Debug, Error)]
+pub enum FilterParsingError {
+    #[error("no argument found after --filter.")]
+    NoArgumentFound,
+
+    #[error("unable to parse filter. You passed in `{0}` and parsing stopped at `{1}`.")]
+    GenericParsingError(String, String),
+
+    #[error("not enough arguments were passed into the filter. You passed in `{0}`.")]
+    NotLongEnough(String),
+}
