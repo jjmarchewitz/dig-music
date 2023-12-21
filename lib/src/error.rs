@@ -28,3 +28,15 @@ pub enum LoadError {
     #[error("this error should never happen. Error building regular expression that matches files in the .zip")]
     RegexError(#[from] regex::Error),
 }
+
+#[derive(Debug, Error)]
+pub enum FilterParsingError {
+    #[error("no argument found after --filter.")]
+    NoArgumentFound,
+
+    #[error("unable to parse filter. You passed in `{0}` and parsing stopped at `{1}`.")]
+    GenericParsingError(String, String),
+
+    #[error("not enough arguments were passed into the filter. You passed in `{0}`.")]
+    NotLongEnough(String),
+}

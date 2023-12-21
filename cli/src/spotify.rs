@@ -2,7 +2,7 @@ mod analysis_type;
 
 use analysis_type::AnalysisType;
 use clap::Args;
-use dig_music_lib::{FilterOn, FilterSelection, SortBy, SortOrder};
+use dig_music_lib::{Filter, FilterOperand, SortBy, SortOrder};
 use eyre::Result;
 use std::path::PathBuf;
 
@@ -13,6 +13,10 @@ pub struct SpotifyArgs {
 
     /// How you want your listen history to be analyzed together (songs, albums, podcasts, or a meta-analysis).
     pub analysis_type: AnalysisType,
+
+    /// Filter results TODO: more help msg
+    #[arg(short, long)]
+    pub filter: Option<Vec<String>>,
 
     /// How to sort the results
     #[arg(short, long, value_enum, default_value_t = SortBy::Time)]
@@ -38,28 +42,14 @@ pub struct SpotifyArgs {
     // use keyring, oauth2 crates and ask user to authenticate if they haven't already
     #[arg(long)]
     pub create_playlist: Option<String>,
-
-    /// TODO: Set the path of the zip file to persist between runs
-    pub set_zip_path: Option<PathBuf>,
-
-    /// TODO: Setup/auth a bunch of stuff
-    pub setup: bool,
-
-    /// TODO: Authenticate with Spotify
-    pub auth: bool,
-
-    /// TODO: Download album art to this folder
-    pub download_album_art: bool,
-
-    /// TODO: disable parts of this tool that only run with an internet connection
-    pub offline: bool,
-    // pub filter: Vec<FilterOn>,
 }
 
-// TODO: --filter that can be used many times, get it into a Vec<Filter> or something.
-// Infer from the filter type if it should apply to plays or results
-
 pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
+    let parsed_filters: Option<Vec<Filter<dyn FilterOperand>>> = match args.filter {
+        Some(filters) => Some(dig_music_lib::parse_filters(filters)?),
+        None => None,
+    };
+
     let df = dig_music_lib::load_plays_to_df(args.path)?;
 
     // If performing meta analysis, print the analysis and immediately terminate
@@ -70,14 +60,18 @@ pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
 
     let df = dig_music_lib::group_plays(df, args.analysis_type.try_into()?)?;
 
-    let mut df = dig_music_lib::sort_grouped_data(df, args.sort, args.order.is_descending())?;
+    dbg!(df.head(Some(2)).get_columns());
 
-    if let Some(csv_path) = args.csv {
-        // TODO: prep for CSV function
-        dig_music_lib::write_df_to_csv(&mut df, &csv_path)?;
-    }
+    // dbg!(args.filter);
 
-    println!("\nDone!\n");
+    // let grouped_data = dig_music_lib::group_plays_together(plays, args.group_type);
+    // let sorted_data = dig_music_lib::sort_data(grouped_data, args.sort, args.order);
+    // print_data(sorted_data, args.limit);
+
+    // if let Some(csv_path) = args.csv {
+    //     // TODO: prep for CSV function
+    //     dig_music_lib::write_df_to_csv(&mut df, &csv_path)?;
+    // }
 
     Ok(())
 }

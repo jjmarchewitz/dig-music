@@ -23,17 +23,21 @@ impl GroupType {
     }
 
     fn get_aggs(&self) -> Vec<Expr> {
+        // Some of these are missing aggregations on columns that represent whatever the "group"
+        // is. For example, Album has no `col("album_name")`. This is because that column is already
+        // created as part of the `df.group_by()` call. The GroupTypes that need to have these extra
+        // columns (i.e. Episode and Song) need them because they group on the entry's URI, not on
+        // the name. We need extra logic to capture the rest of the columns we care about (album name,
+        // artist name, track name, etc.)
         match self {
             Self::Album => vec![
-                col(col::MS_PLAYED).sum(),
-                col(col::ALBUM_NAME).first(),
-                all().exclude(vec![col::MS_PLAYED, col::ALBUM_NAME]),
+                col("ms_played").sum(),
+                all().exclude(vec!["ms_played", "album_name"]),
             ],
             Self::Artist => vec![
-                col(col::MS_PLAYED).sum(),
-                col(col::ALBUM_NAME).first(),
-                col(col::ARTIST_NAME).first(),
-                all().exclude(vec![col::MS_PLAYED, col::ALBUM_NAME, col::ARTIST_NAME]),
+                col("ms_played").sum(),
+                col("album_name").first(),
+                all().exclude(vec!["ms_played", "album_name", "artist_name"]),
             ],
             Self::Episode => vec![
                 col(col::MS_PLAYED).sum(),
@@ -42,9 +46,8 @@ impl GroupType {
                 all().exclude(vec![col::MS_PLAYED, col::PODCAST_NAME, col::EPISODE_NAME]),
             ],
             Self::Podcast => vec![
-                col(col::MS_PLAYED).sum(),
-                col(col::PODCAST_NAME).first(),
-                all().exclude(vec![col::MS_PLAYED, col::PODCAST_NAME]),
+                col("ms_played").sum(),
+                all().exclude(vec!["ms_played", "podcast_name"]),
             ],
             Self::Song => vec![
                 col(col::MS_PLAYED).sum(),

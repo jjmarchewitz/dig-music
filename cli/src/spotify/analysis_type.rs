@@ -14,14 +14,14 @@ pub enum AnalysisType {
 
 #[derive(Error, Debug)]
 #[error("Cannot convert the \"meta\" analysis type to a group type")]
-pub struct CannotConvertToGroup;
+pub struct CannotConvertMetaToGroup;
 
 impl TryInto<GroupType> for AnalysisType {
-    type Error = CannotConvertToGroup;
+    type Error = CannotConvertMetaToGroup;
 
     fn try_into(self) -> Result<GroupType, Self::Error> {
         match self {
-            Self::Meta => Err(CannotConvertToGroup),
+            Self::Meta => Err(CannotConvertMetaToGroup),
             Self::Album => Ok(GroupType::Album),
             Self::Artist => Ok(GroupType::Artist),
             Self::Episode => Ok(GroupType::Episode),
