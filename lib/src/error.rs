@@ -1,5 +1,6 @@
 use polars::error::PolarsError;
 use regex;
+use std::num::ParseIntError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -39,4 +40,10 @@ pub enum FilterParsingError {
 
     #[error("not enough arguments were passed into the filter. You passed in `{0}`.")]
     NotLongEnough(String),
+
+    #[error("unable to parse string into int.")]
+    IntParsingError(#[from] ParseIntError),
+
+    #[error("Unable to construct the filter: `{0}`. You may have provided a combination of arguments that is invalid.")]
+    UnknownError(String),
 }

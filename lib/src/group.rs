@@ -27,8 +27,7 @@ impl GroupType {
         // is. For example, Album has no `col("album_name")`. This is because that column is already
         // created as part of the `df.group_by()` call. The GroupTypes that need to have these extra
         // columns (i.e. Episode and Song) need them because they group on the entry's URI, not on
-        // the name. We need extra logic to capture the rest of the columns we care about (album name,
-        // artist name, track name, etc.)
+        // the name.
         match self {
             Self::Album => vec![
                 col("ms_played").sum(),
@@ -66,15 +65,11 @@ impl GroupType {
 }
 
 pub fn group_plays(df: DataFrame, group_by: GroupType) -> PolarsResult<DataFrame> {
-    dbg!(df.get_column_names());
-
-    let aggs = group_by.get_aggs();
-
-    dbg!(aggs);
-
     df.lazy()
         .group_by([group_by.get_column_name()])
         .agg(group_by.get_aggs())
-        .with_column(col(col::TIMESTAMP).list().len().alias(col::PLAY_COUNT))
+        .with_column(
+            col(col::TIMESTAMP).list().len().alias(col::PLAY_COUNT), // .cast(u64),
+        )
         .collect()
 }

@@ -24,7 +24,7 @@ pub fn write_df_to_csv(df: &mut DataFrame, csv_path: &PathBuf) -> PolarsResult<(
     let mut file = File::create(csv_path).expect("could not create CSV file");
 
     CsvWriter::new(&mut file)
-        .has_header(true)
+        .include_header(true)
         .with_separator(b',')
         .finish(&mut df_with_primitive_columns_only)?;
 

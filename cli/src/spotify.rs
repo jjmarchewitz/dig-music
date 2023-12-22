@@ -60,9 +60,9 @@ pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
 
     let df = dig_music_lib::group_plays(df, args.analysis_type.try_into()?)?;
 
-    dbg!(df.head(Some(2)).get_columns());
+    // dbg!(df.head(Some(2)).get_columns());
 
-    // dbg!(args.filter);
+    dbg!(parsed_filters);
 
     // let grouped_data = dig_music_lib::group_plays_together(plays, args.group_type);
     // let sorted_data = dig_music_lib::sort_data(grouped_data, args.sort, args.order);
