@@ -1,3 +1,4 @@
+use chrono;
 use polars::error::PolarsError;
 use regex;
 use std::num::ParseIntError;
@@ -43,6 +44,9 @@ pub enum FilterParsingError {
 
     #[error("unable to parse string into int.")]
     IntParsingError(#[from] ParseIntError),
+
+    #[error("unable to parse string into date.")]
+    DateParsingError(#[from] chrono::ParseError),
 
     #[error("Unable to construct the filter: `{0}`. You may have provided a combination of arguments that is invalid.")]
     UnknownError(String),

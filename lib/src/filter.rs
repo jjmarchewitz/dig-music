@@ -30,31 +30,29 @@ impl<T: FilterOperand + ?Sized> Filter<T> {
     }
 }
 
-// impl<T: FilterOperand> TryFrom<&str> for Filter<T> {
-//     type Error = FilterParsingError;
-
-//     fn try_from(value: &str) -> Result<Self, Self::Error> {
-//         todo!()
-//     }
-// }
-
 #[derive(Debug)]
 pub enum FilterBy {
     Date,
-    PlayCount,
+    DateTime,
     ListenTime,
+    PlayCount,
+    Time,
 }
 
 const FILTER_BY_DATE_STR: &'static str = "date";
-const FILTER_BY_PLAY_COUNT_STR: &'static str = "play_count";
+const FILTER_BY_DATETIME_STR: &'static str = "datetime";
 const FILTER_BY_LISTEN_TIME_STR: &'static str = "listen_time";
+const FILTER_BY_PLAY_COUNT_STR: &'static str = "play_count";
+const FILTER_BY_TIME_STR: &'static str = "time";
 
 impl FilterBy {
     fn filter_when(&self) -> FilterWhen {
         match self {
             FilterBy::Date => FilterWhen::Plays,
-            FilterBy::PlayCount => FilterWhen::GroupedData,
+            FilterBy::DateTime => FilterWhen::Plays,
             FilterBy::ListenTime => FilterWhen::GroupedData,
+            FilterBy::PlayCount => FilterWhen::GroupedData,
+            FilterBy::Time => FilterWhen::Plays,
         }
     }
 }
