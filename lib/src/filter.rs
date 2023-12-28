@@ -11,13 +11,13 @@ use polars::prelude::*;
 use crate::error::FilterParsingError;
 
 #[derive(Debug)]
-pub struct Filter<T: FilterOperand + ?Sized> {
+pub struct Filter {
     filter_by: FilterBy,
-    filter_type: FilterType<T>,
+    filter_type: FilterType,
 }
 
-impl<T: FilterOperand + ?Sized> Filter<T> {
-    fn new(filter_by: FilterBy, filter_type: FilterType<T>) -> Option<Self> {
+impl Filter {
+    fn new(filter_by: FilterBy, filter_type: FilterType) -> Option<Self> {
         // TODO: check if FilterBy and FilterType are compatible
         Some(Self {
             filter_by,
@@ -30,6 +30,7 @@ impl<T: FilterOperand + ?Sized> Filter<T> {
     }
 }
 
+// TODO: Add Song, Artist, Album, Podcast, Podcast Episode
 #[derive(Debug)]
 pub enum FilterBy {
     Date,
@@ -63,13 +64,23 @@ pub enum FilterWhen {
     GroupedData,
 }
 
+// TODO: Add "Contains"
 #[derive(Debug)]
-pub enum FilterType<T: FilterOperand + ?Sized> {
-    Above(Box<T>),
-    Between { lower: Box<T>, upper: Box<T> },
-    Below(Box<T>),
-    Equals(Box<T>),
-    Not(Box<T>),
+pub enum FilterType {
+    Above(FilterOperand),
+    Between {
+        lower: FilterOperand,
+        upper: FilterOperand,
+    },
+    Below(FilterOperand),
+    Equals(FilterOperand),
+    Not(FilterOperand),
+}
+
+impl FilterType {
+    fn is_valid() -> bool {
+        todo!()
+    }
 }
 
 const FILTER_TYPE_ABOVE_STR: &'static str = "above";
@@ -78,6 +89,6 @@ const FILTER_TYPE_BELOW_STR: &'static str = "below";
 const FILTER_TYPE_EQUALS_STR: &'static str = "equals";
 const FILTER_TYPE_NOT_STR: &'static str = "not";
 
-pub fn filter<T: FilterOperand>(df: DataFrame, filter: Filter<T>) -> PolarsResult<DataFrame> {
+pub fn filter(df: DataFrame, filter: Filter) -> PolarsResult<DataFrame> {
     todo!()
 }

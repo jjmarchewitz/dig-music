@@ -45,7 +45,7 @@ pub struct SpotifyArgs {
 }
 
 pub fn spotify_main(args: SpotifyArgs) -> Result<()> {
-    let parsed_filters: Option<Vec<Filter<dyn FilterOperand>>> = match args.filter {
+    let parsed_filters: Option<Vec<Filter>> = match args.filter {
         Some(filters) => Some(dig_music_lib::parse_filters(filters)?),
         None => None,
     };

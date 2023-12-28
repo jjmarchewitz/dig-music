@@ -7,16 +7,14 @@ use thiserror::Error;
 use super::*;
 use crate::error::FilterParsingError;
 
-pub fn parse_filters(
-    filter_strs: Vec<String>,
-) -> Result<Vec<Filter<dyn FilterOperand>>, FilterParsingError> {
+pub fn parse_filters(filter_strs: Vec<String>) -> Result<Vec<Filter>, FilterParsingError> {
     filter_strs
         .into_iter()
         .map(|s| parse_one_filter(s))
-        .collect::<Result<Vec<Filter<dyn FilterOperand>>, FilterParsingError>>()
+        .collect::<Result<Vec<Filter>, FilterParsingError>>()
 }
 
-fn parse_one_filter(filter_str: String) -> Result<Filter<dyn FilterOperand>, FilterParsingError> {
+fn parse_one_filter(filter_str: String) -> Result<Filter, FilterParsingError> {
     if filter_str.len() <= 0 {
         return Err(FilterParsingError::NoArgumentFound);
     }
@@ -28,7 +26,7 @@ fn parse_one_filter(filter_str: String) -> Result<Filter<dyn FilterOperand>, Fil
         None => return Err(FilterParsingError::NotLongEnough(filter_str)),
     };
 
-    let filter_type: FilterType<dyn FilterOperand> =
+    let filter_type: FilterType =
         parse_filter_type_and_bounds(&filter_str, &mut filter_str_components, &filter_by)?;
 
     if let Some(filter) = Filter::new(filter_by, filter_type) {
@@ -58,7 +56,7 @@ fn parse_filter_type_and_bounds(
     filter_str: &str,
     filter_str_components: &mut VecDeque<&str>,
     filter_by: &FilterBy,
-) -> Result<FilterType<dyn FilterOperand>, FilterParsingError> {
+) -> Result<FilterType, FilterParsingError> {
     let filter_str = filter_str.to_string();
 
     let Some(filter_type_str) = filter_str_components.pop_front() else {
@@ -94,15 +92,12 @@ fn parse_filter_type_and_bounds(
     Ok(filter_type)
 }
 
-fn parse_filter_bound(
-    filter_by: &FilterBy,
-    s: &str,
-) -> Result<Box<dyn FilterOperand>, FilterParsingError> {
+fn parse_filter_bound(filter_by: &FilterBy, s: &str) -> Result<FilterOperand, FilterParsingError> {
     match filter_by {
-        FilterBy::Date => Ok(Box::new(s.parse::<NaiveDate>()?)),
-        FilterBy::DateTime => Ok(Box::new(s.parse::<NaiveDateTime>()?)),
-        FilterBy::ListenTime => Ok(Box::new(s.parse::<u64>()?)),
-        FilterBy::PlayCount => Ok(Box::new(s.parse::<u32>()?)),
-        FilterBy::Time => Ok(Box::new(s.parse::<NaiveTime>()?)),
+        FilterBy::Date => Ok(FilterOperand::NaiveDate(s.parse::<NaiveDate>()?)),
+        FilterBy::DateTime => Ok(FilterOperand::NaiveDateTime(s.parse::<NaiveDateTime>()?)),
+        FilterBy::ListenTime => Ok(FilterOperand::U64(s.parse::<u64>()?)),
+        FilterBy::PlayCount => Ok(FilterOperand::U32(s.parse::<u32>()?)),
+        FilterBy::Time => Ok(FilterOperand::NaiveTime(s.parse::<NaiveTime>()?)),
     }
 }
