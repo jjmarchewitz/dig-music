@@ -48,6 +48,12 @@ pub enum FilterParsingError {
     #[error("unable to parse string into date.")]
     DateParsingError(#[from] chrono::ParseError),
 
+    #[error("unable to parse \"{0}\" into FilterBy.")]
+    FilterByParsingError(String),
+
+    #[error("unable to parse \"{0}\" into FilterType.")]
+    FilterTypeParsingError(String),
+
     #[error("Unable to construct the filter: `{0}`. You may have provided a combination of arguments that is invalid.")]
     UnknownError(String),
 }

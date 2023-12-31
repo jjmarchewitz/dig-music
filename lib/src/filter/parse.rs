@@ -22,7 +22,7 @@ fn parse_one_filter(filter_str: String) -> Result<Filter, FilterParsingError> {
     let mut filter_str_components: VecDeque<&str> = filter_str.split(" ").collect();
 
     let filter_by = match filter_str_components.pop_front() {
-        Some(filter_by) => parse_filter_by(&filter_str, filter_by)?,
+        Some(filter_by) => FilterBy::from_str(filter_by)?,
         None => return Err(FilterParsingError::NotLongEnough(filter_str)),
     };
 
@@ -33,22 +33,6 @@ fn parse_one_filter(filter_str: String) -> Result<Filter, FilterParsingError> {
         Ok(filter)
     } else {
         Err(FilterParsingError::UnknownError(filter_str))
-    }
-}
-
-fn parse_filter_by(filter_str: &str, filter_by: &str) -> Result<FilterBy, FilterParsingError> {
-    match filter_by.to_lowercase().as_str() {
-        FILTER_BY_DATE_STR => Ok(FilterBy::Date),
-        FILTER_BY_DATETIME_STR => Ok(FilterBy::DateTime),
-        FILTER_BY_LISTEN_TIME_STR => Ok(FilterBy::ListenTime),
-        FILTER_BY_PLAY_COUNT_STR => Ok(FilterBy::PlayCount),
-        FILTER_BY_TIME_STR => Ok(FilterBy::Time),
-        _ => {
-            return Err(FilterParsingError::GenericParsingError(
-                filter_str.to_string(),
-                filter_by.to_string(),
-            ));
-        }
     }
 }
 
@@ -67,10 +51,20 @@ fn parse_filter_type_and_bounds(
         return Err(FilterParsingError::NotLongEnough(filter_str));
     };
 
-    let filter_type = match filter_type_str {
-        FILTER_TYPE_ABOVE_STR => FilterType::Above(parse_filter_bound(&filter_by, first_arg)?),
-        FILTER_TYPE_BELOW_STR => FilterType::Below(parse_filter_bound(&filter_by, first_arg)?),
-        FILTER_TYPE_BETWEEN_STR => {
+    let Ok(filter_type_discriminant) = FilterTypeDiscriminants::from_str(filter_type_str) else {
+        return Err(FilterParsingError::FilterTypeParsingError(
+            filter_type_str.to_string(),
+        ));
+    };
+
+    let filter_type = match filter_type_discriminant {
+        FilterTypeDiscriminants::Above => {
+            FilterType::Above(parse_filter_bound(&filter_by, first_arg)?)
+        }
+        FilterTypeDiscriminants::Below => {
+            FilterType::Below(parse_filter_bound(&filter_by, first_arg)?)
+        }
+        FilterTypeDiscriminants::Between => {
             let Some(second_arg) = filter_str_components.pop_front() else {
                 return Err(FilterParsingError::NotLongEnough(filter_str));
             };
@@ -79,8 +73,13 @@ fn parse_filter_type_and_bounds(
                 upper: parse_filter_bound(&filter_by, second_arg)?,
             }
         }
-        FILTER_TYPE_EQUALS_STR => FilterType::Equals(parse_filter_bound(&filter_by, first_arg)?),
-        FILTER_TYPE_NOT_STR => FilterType::Not(parse_filter_bound(&filter_by, first_arg)?),
+        FilterTypeDiscriminants::Contains => {
+            FilterType::Contains(parse_filter_bound(&filter_by, first_arg)?)
+        }
+        FilterTypeDiscriminants::Equals => {
+            FilterType::Equals(parse_filter_bound(&filter_by, first_arg)?)
+        }
+        FilterTypeDiscriminants::Not => FilterType::Not(parse_filter_bound(&filter_by, first_arg)?),
         _ => {
             return Err(FilterParsingError::GenericParsingError(
                 filter_str.to_string(),
@@ -93,11 +92,13 @@ fn parse_filter_type_and_bounds(
 }
 
 fn parse_filter_bound(filter_by: &FilterBy, s: &str) -> Result<FilterOperand, FilterParsingError> {
-    match filter_by {
-        FilterBy::Date => Ok(FilterOperand::NaiveDate(s.parse::<NaiveDate>()?)),
-        FilterBy::DateTime => Ok(FilterOperand::NaiveDateTime(s.parse::<NaiveDateTime>()?)),
-        FilterBy::ListenTime => Ok(FilterOperand::U64(s.parse::<u64>()?)),
-        FilterBy::PlayCount => Ok(FilterOperand::U32(s.parse::<u32>()?)),
-        FilterBy::Time => Ok(FilterOperand::NaiveTime(s.parse::<NaiveTime>()?)),
-    }
+    let operand = match filter_by {
+        FilterBy::Date => FilterOperand::NaiveDate(s.parse::<NaiveDate>()?),
+        FilterBy::DateTime => FilterOperand::NaiveDateTime(s.parse::<NaiveDateTime>()?),
+        FilterBy::ListenTime => FilterOperand::U64(s.parse::<u64>()?),
+        FilterBy::PlayCount => FilterOperand::U32(s.parse::<u32>()?),
+        FilterBy::Time => FilterOperand::NaiveTime(s.parse::<NaiveTime>()?),
+    };
+
+    Ok(operand)
 }
