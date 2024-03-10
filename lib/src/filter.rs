@@ -40,31 +40,21 @@ impl Filter {
     }
 }
 
-// TODO: Add Song, Artist, Album, Podcast, Podcast Episode, Duration
 #[derive(Debug)]
 pub enum FilterBy {
     Date,
     DateTime,
+    Time,
+
     ListenTime,
     PlayCount,
-    Time,
-}
+    PlayDuration,
 
-impl FromStr for FilterBy {
-    type Err = FilterParsingError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "date" => Ok(FilterBy::Date),
-            "datetime" => Ok(FilterBy::DateTime),
-            "listen_time" => Ok(FilterBy::ListenTime),
-            "play_count" => Ok(FilterBy::PlayCount),
-            "time" => Ok(FilterBy::Time),
-            _ => {
-                return Err(FilterParsingError::FilterByParsingError(s.to_string()));
-            }
-        }
-    }
+    Album,
+    Artist,
+    Episode,
+    Podcast,
+    Song,
 }
 
 impl FilterBy {
@@ -72,9 +62,17 @@ impl FilterBy {
         match self {
             FilterBy::Date => FilterWhen::Plays,
             FilterBy::DateTime => FilterWhen::Plays,
+            FilterBy::Time => FilterWhen::Plays,
+
             FilterBy::ListenTime => FilterWhen::GroupedData,
             FilterBy::PlayCount => FilterWhen::GroupedData,
-            FilterBy::Time => FilterWhen::Plays,
+            FilterBy::PlayDuration => FilterWhen::GroupedData,
+
+            FilterBy::Album => FilterWhen::Plays,
+            FilterBy::Artist => FilterWhen::Plays,
+            FilterBy::Episode => FilterWhen::Plays,
+            FilterBy::Podcast => FilterWhen::Plays,
+            FilterBy::Song => FilterWhen::Plays,
         }
     }
 }
@@ -100,7 +98,7 @@ pub enum FilterType {
 }
 
 impl FilterType {
-    fn is_valid() -> bool {
+    fn is_valid(&self) -> bool {
         todo!()
     }
 }

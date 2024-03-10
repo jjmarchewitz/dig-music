@@ -7,6 +7,34 @@ use thiserror::Error;
 use super::*;
 use crate::error::FilterParsingError;
 
+impl FromStr for FilterBy {
+    type Err = FilterParsingError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let res = match s {
+            "listen_on_date" => FilterBy::Date,
+            "listen_at_datetime" => FilterBy::DateTime,
+            "listen_at_time" => FilterBy::Time,
+
+            "total_listen_time" => FilterBy::ListenTime,
+            "play_count" => FilterBy::PlayCount,
+            "play_duration" => FilterBy::PlayDuration,
+
+            "album" => FilterBy::Album,
+            "artist" => FilterBy::Artist,
+            "episode" => FilterBy::Episode,
+            "podcast" => FilterBy::Podcast,
+            "song" => FilterBy::Song,
+
+            _ => {
+                return Err(FilterParsingError::FilterByParsingError(s.to_string()));
+            }
+        };
+
+        Ok(res)
+    }
+}
+
 pub fn parse_filters(filter_strs: Vec<String>) -> Result<Vec<Filter>, FilterParsingError> {
     filter_strs
         .into_iter()
@@ -68,6 +96,7 @@ fn parse_filter_type_and_bounds(
             let Some(second_arg) = filter_str_components.pop_front() else {
                 return Err(FilterParsingError::NotLongEnough(filter_str));
             };
+
             FilterType::Between {
                 lower: parse_filter_bound(&filter_by, first_arg)?,
                 upper: parse_filter_bound(&filter_by, second_arg)?,
@@ -95,9 +124,17 @@ fn parse_filter_bound(filter_by: &FilterBy, s: &str) -> Result<FilterOperand, Fi
     let operand = match filter_by {
         FilterBy::Date => FilterOperand::NaiveDate(s.parse::<NaiveDate>()?),
         FilterBy::DateTime => FilterOperand::NaiveDateTime(s.parse::<NaiveDateTime>()?),
+        FilterBy::Time => FilterOperand::NaiveTime(s.parse::<NaiveTime>()?),
+
         FilterBy::ListenTime => FilterOperand::U64(s.parse::<u64>()?),
         FilterBy::PlayCount => FilterOperand::U32(s.parse::<u32>()?),
-        FilterBy::Time => FilterOperand::NaiveTime(s.parse::<NaiveTime>()?),
+        FilterBy::PlayDuration => FilterOperand::U64(s.parse::<u64>()?),
+
+        FilterBy::Album => FilterOperand::String(s.to_string()),
+        FilterBy::Artist => FilterOperand::String(s.to_string()),
+        FilterBy::Episode => FilterOperand::String(s.to_string()),
+        FilterBy::Podcast => FilterOperand::String(s.to_string()),
+        FilterBy::Song => FilterOperand::String(s.to_string()),
     };
 
     Ok(operand)
