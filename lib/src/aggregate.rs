@@ -62,23 +62,30 @@ pub struct AggregatedData {
 
 impl AggregatedData {
     pub fn add_play(&mut self, play: Play) {
-        *self.ms_played += play.ms_played;
+        if let Some(ms_played) = play.ms_played {
+            *self.ms_played += ms_played;
+        }
+
         self.ms_played.increment_play_count();
 
         self.play_count += 1;
 
         // If this Play has `start_reason` data, add it
-        if let Some(c) = self.start_reason.get_mut(play.reason_start.as_str()) {
-            *c += 1;
-        } else {
-            self.start_reason.insert(play.reason_start, 1);
+        if let Some(reason_start) = play.reason_start {
+            if let Some(c) = self.start_reason.get_mut(reason_start.as_str()) {
+                *c += 1;
+            } else {
+                self.start_reason.insert(reason_start, 1);
+            }
         }
 
-        // If this Play has `end_reason` data, add it
-        if let Some(c) = self.end_reason.get_mut(play.reason_end.as_str()) {
-            *c += 1;
-        } else {
-            self.end_reason.insert(play.reason_end, 1);
+        if let Some(reason_end) = play.reason_end {
+            // If this Play has `end_reason` data, add it
+            if let Some(c) = self.end_reason.get_mut(reason_end.as_str()) {
+                *c += 1;
+            } else {
+                self.end_reason.insert(reason_end, 1);
+            }
         }
 
         // If this Play has `shuffle` data, add it
@@ -99,12 +106,16 @@ impl AggregatedData {
             self.num_skips.increment_play_count()
         }
 
-        self.timestamps.push(play.ts);
+        if let Some(ts) = play.ts {
+            self.timestamps.push(ts);
+        }
 
-        if let Some(c) = self.conn_country.get_mut(play.conn_country.as_str()) {
-            *c += 1;
-        } else {
-            self.conn_country.insert(play.conn_country, 1);
+        if let Some(conn_country) = play.conn_country {
+            if let Some(c) = self.conn_country.get_mut(conn_country.as_str()) {
+                *c += 1;
+            } else {
+                self.conn_country.insert(conn_country, 1);
+            }
         }
     }
 
