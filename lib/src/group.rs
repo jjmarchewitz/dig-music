@@ -1,5 +1,4 @@
 use crate::{aggregate::AggregatedData, Play};
-use clap::ValueEnum;
 use std::{collections::HashMap, fmt::Display};
 use thiserror::Error;
 
@@ -32,7 +31,7 @@ pub trait PlayGroup: Debug + Sync + Send {
     fn get_metadata(&self) -> GroupMetaData;
 }
 
-#[derive(Debug, Clone, Copy, ValueEnum)]
+#[derive(Debug, Clone, Copy)]
 pub enum GroupType {
     Album,
     Artist,

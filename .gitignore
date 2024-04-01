@@ -1,6 +1,7 @@
 # Project specific
 target
 test-data
+misc
 
 # Logs
 logs

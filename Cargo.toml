@@ -1,4 +1,4 @@
 [workspace]
 
-members = ["lib", "cli", "app/src-tauri"]
+members = ["lib", "scratchpad"]
 resolver = "2"
