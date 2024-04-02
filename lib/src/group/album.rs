@@ -22,11 +22,11 @@ impl PlayGroup for Album {
         self.aggregated_data.add_play(play)
     }
 
-    fn get_aggregated_data(&self) -> &AggregatedData {
+    fn get_agg_data(&self) -> &AggregatedData {
         &self.aggregated_data
     }
 
-    fn get_aggregated_data_mut(&mut self) -> &mut AggregatedData {
+    fn get_agg_data_mut(&mut self) -> &mut AggregatedData {
         &mut self.aggregated_data
     }
 

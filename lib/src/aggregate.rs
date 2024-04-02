@@ -2,12 +2,12 @@ use chrono::{DateTime, Duration, Utc};
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
-    ops::{Deref, DerefMut},
+    ops::{AddAssign, Deref, DerefMut},
 };
 
 use crate::Play;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Accumulator<T: Default + Debug + Display> {
     pub total: T,
     num_times_play_added: u64,
@@ -48,7 +48,14 @@ impl<T: Debug + Default + Display> Display for Accumulator<T> {
     }
 }
 
-#[derive(Debug, Default)]
+impl<T: Debug + Default + Display + AddAssign> AddAssign for Accumulator<T> {
+    fn add_assign(&mut self, rhs: Self) {
+        self.total += rhs.total;
+        self.num_times_play_added += rhs.num_times_play_added;
+    }
+}
+
+#[derive(Debug, Default, Clone)]
 pub struct AggregatedData {
     pub ms_played: Accumulator<u64>,
     pub play_count: u64,
@@ -58,6 +65,8 @@ pub struct AggregatedData {
     pub num_skips: Accumulator<u64>,
     pub timestamps: Vec<DateTime<Utc>>,
     pub conn_country: HashMap<String, u64>,
+    pub track_uri: Option<String>,
+    pub episode_uri: Option<String>,
 }
 
 impl AggregatedData {
@@ -116,6 +125,14 @@ impl AggregatedData {
             } else {
                 self.conn_country.insert(conn_country, 1);
             }
+        }
+
+        if let Some(track_uri) = play.spotify_track_uri {
+            self.track_uri = Some(track_uri)
+        }
+
+        if let Some(episode_uri) = play.spotify_episode_uri {
+            self.episode_uri = Some(episode_uri)
         }
     }
 
@@ -179,5 +196,40 @@ impl AggregatedData {
         output.push_str(format!("{} ms", ms).as_str());
 
         output
+    }
+}
+
+impl AddAssign for AggregatedData {
+    fn add_assign(&mut self, rhs: Self) {
+        self.ms_played += rhs.ms_played;
+        self.play_count += rhs.play_count;
+
+        for (new_reason, new_count) in rhs.start_reason.into_iter() {
+            if let Some(old_count) = self.start_reason.get(&new_reason) {
+                self.start_reason.insert(new_reason, old_count + new_count);
+            } else {
+                self.start_reason.insert(new_reason, new_count);
+            }
+        }
+
+        for (new_reason, new_count) in rhs.end_reason.into_iter() {
+            if let Some(old_count) = self.end_reason.get(&new_reason) {
+                self.end_reason.insert(new_reason, old_count + new_count);
+            } else {
+                self.end_reason.insert(new_reason, new_count);
+            }
+        }
+
+        self.num_shuffles += rhs.num_shuffles;
+        self.num_skips += rhs.num_skips;
+        self.timestamps.extend(rhs.timestamps);
+
+        for (new_country, new_count) in rhs.conn_country.into_iter() {
+            if let Some(old_count) = self.conn_country.get(&new_country) {
+                self.conn_country.insert(new_country, old_count + new_count);
+            } else {
+                self.conn_country.insert(new_country, new_count);
+            }
+        }
     }
 }

@@ -25,8 +25,8 @@ pub trait PlayGroup: Debug + Sync + Send {
     /// Does nothing on with the optional fields where play has None
     fn add_play(&mut self, play: Play);
 
-    fn get_aggregated_data(&self) -> &AggregatedData;
-    fn get_aggregated_data_mut(&mut self) -> &mut AggregatedData;
+    fn get_agg_data(&self) -> &AggregatedData;
+    fn get_agg_data_mut(&mut self) -> &mut AggregatedData;
 
     fn get_metadata(&self) -> GroupMetaData;
 }
