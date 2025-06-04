@@ -4,10 +4,11 @@ use arboard::Clipboard;
 use eyre::Result;
 
 fn main() -> Result<()> {
-    let playlist_str = scripts::top_intersecting::run()?;
+    // let output_str = scripts::top_intersecting::run()?;
+    let output_str = scripts::find_song::run()?;
 
     let mut clipboard = Clipboard::new()?;
-    clipboard.set_text(playlist_str)?;
+    clipboard.set_text(output_str)?;
 
     println!("\n> Copied to clipboard!");
 

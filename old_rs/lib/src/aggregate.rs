@@ -14,6 +14,12 @@ pub struct Accumulator<T: Default + Debug + Display> {
 }
 
 impl<T: Debug + Default + Display> Accumulator<T> {
+    fn combine_avg(&mut self, new_acc: T) {
+        todo!()
+    }
+}
+
+impl<T: Debug + Default + Display> Accumulator<T> {
     fn increment_play_count(&mut self) {
         self.num_times_play_added += 1
     }
